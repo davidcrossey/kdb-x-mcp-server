@@ -1,0 +1,67 @@
+kdb Insights Python Query API Query Guide
+
+Parameters
+
+|name|type|description|default|
+|---|---|---|---|
+|table|str|The name of the table from which to retrieve data|N/A|
+|start_time|str | datetime|The earliest time data is to be queried from|15 minutes prior to the time that the get_data call is made|
+|end_time|str | datetime|The latest time data is to be queried from|The time that the get_data function is called|
+|input_timezone|str|The timezones of start_time and end_time|UTC|
+|output_timezone|str|The timezone of output timestamp columns|UTC|
+|filter|list|A list of triadic Python lists defining filter conditions in the format [['function', 'column name', 'parameter'], ... ]|None|
+|group_by|str | list[str]|Column(s) to group aggregation result by|None|
+|aggregations|str | list[str] | list[list[str]]|The column or columns to be returned from the table across DAPs if defined as a str or list of str. If provided as a list of 3-element Python lists as follows [['assignname', 'agg', 'column'], ...] then assignName defines the name to be assigned to the return of the aggregation, agg defines the aggregation function to be used and column defines the column on which that aggregation is applied.|None|
+|fill|str|This defines how to handle the presence of null values. This should be supplied as a single str item with value forward to define the use of the last non-null value in a column or zero to replace all null values with the 0 value of that column.|None|
+|temporality|str|This determines the way that the start_time and end_time arguments are interpreted. The two support input types are 'slice' and 'snapshot'.|None|
+|slice|list[str]|This should be defined as a Python list of 'times' which denote the time range to grab between each date in the start_time and end_time range when a temporality of 'slice' is used.|None|
+|sort_columns|str | list[str]|Column or columns to sort on.|None|
+|labels|dict[str, str]|labels defined in the assembly file of the DAPs can be used to only select data from DAPs in assemblies matching that label.|None|
+|limit|int | list[int]|Limits the row number of the result. Read the Limit documentation for more details.|None|
+
+IMPORTANT - Read Specifying Timestamps for the string formats that can be used for the start_time and end_time parameters.
+
+Returns
+
+|type|description|
+|---|---|
+|pykx.Table or json output|The data returned from the get_data call
+|
+
+Examples
+
+Connect to a running instance of kdb Insights Enterprise and query using get_data with default values querying a named table.
+
+```python
+>>> import kxi.query
+>>> conn = kxi.query.Query()
+>>> conn.get_data('my_table')
+```
+
+Query the instance providing arguments to various get_data calls.
+
+```python
+>>> conn.get_data('my_table', group_by = ['sensorID', 'qual'])
+>>> conn.get_data('my_table', filter = [['within', 'qual', [0, 2]]])
+>>> conn.get_data('my_table', start_time='2000.05.26',end_time='2000.05.27')
+```
+
+Connect to a running instance of kdb Insights Enterprise and query using get_data returning result as json payload.
+
+```python
+>>> import kxi.query
+>>> conn = kxi.query.Query('https://my-deploy.kx.com',
+...                        client_id='my-client-id',
+...                        client_secret='my-client-secret',
+...                        data_format='application/json')
+>>> conn.get_data('my_table')
+```
+
+Connect to a running instance of kdb Insights and query using get_data returning result as json payload.
+
+```python
+>>> import kxi.query
+>>> conn = kxi.query.Query('http://localhost:8080',
+...                        usage='MICROSERVICES')
+>>> conn.get_data('my_table')
+```
