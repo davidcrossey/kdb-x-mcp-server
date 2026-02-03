@@ -3,6 +3,7 @@ import pykx as kx
 import json
 from typing import Dict, Any
 from mcp_server.utils.kdbx import get_kdb_connection
+import kxi.query
 
 logger = logging.getLogger(__name__)
 MAX_ROWS_RETURNED = 1000
@@ -16,14 +17,15 @@ async def run_query_impl(sqlSelectQuery: str) -> Dict[str, Any]:
             if keyword in query_upper and not query_upper.startswith('SELECT'):
                 raise ValueError(f"Query contains dangerous keyword: {keyword}")
 
-        conn = get_kdb_connection()
+        conn = kxi.query.Query(data_format='application/json')
+        data = conn.sql(f"{sqlSelectQuery} LIMIT {MAX_ROWS_RETURNED}")
         # below query gets kdbx table data back as json for correct conversion of different datatypes
-        result = conn('{r:.s.e x;`rowCount`data!(count r;.j.j y sublist r)}', kx.CharVector(sqlSelectQuery), MAX_ROWS_RETURNED)
+        result = {'rowCount': len(data), 'data': data}
         total = int(result['rowCount'])
         if 0==total:
             return {"status": "success", "data": [], "message": "No rows returned"}
         # parse json result
-        rows = json.loads(result['data'].py().decode('utf-8'))
+        rows = result['data']
         if total > MAX_ROWS_RETURNED:
             logger.info(f"Table has {total} rows. Query returned truncated data to {MAX_ROWS_RETURNED} rows.")
             return {

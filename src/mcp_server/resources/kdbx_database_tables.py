@@ -4,27 +4,31 @@ from mcp.types import TextContent
 from mcp_server.utils.kdbx import get_kdb_connection
 from mcp_server.utils.format_utils import format_data_for_display
 from mcp_server.utils.embeddings_helpers import get_embedding_config
+import kxi.query
 
 logger = logging.getLogger(__name__)
 
 
 async def kdbx_describe_table_impl(table: str) -> List[TextContent]:
     """
-    Describe a specific KDB table with metadata and sample rows.
+    Describe a specific KDB table with metadata.
 
     Args:
         table: Name of the KDB table to describe
 
     Returns:
-        List[TextContent]: Table description with metadata and sample data
+        List[TextContent]: Table description with metadata
     """
     try:
-        conn = get_kdb_connection()
+        conn = kxi.query.Query()
 
-        total_records = conn('{count get x}', table).py()
+        meta = conn.get_meta().py()
+        idx = meta['schema']['table'].index(table)
+        record = meta['schema']['columns'][idx]
+        cols = [k[0] for k in record.keys()]
+        typ = [v["typ"] for v in record.values()]
 
-        schema_data = conn.meta(table).py()
-        partitioned_table = table in conn.Q.pt.py()
+        schema_data = { "columns": cols, "types": typ}
 
         output_lines = [
             f"\n  TABLE ANALYSIS: {table}",
@@ -36,19 +40,6 @@ async def kdbx_describe_table_impl(table: str) -> List[TextContent]:
             format_data_for_display(schema_data, table)
         ])
 
-        if total_records > 0:
-            preview_size = min(3, total_records)
-            if not partitioned_table:
-                preview_data = conn('{x sublist get y}', preview_size, table).py()
-            else:
-                preview_data = conn('{.Q.ind[get y;til x]}', preview_size, table).py()
-
-            output_lines.extend([
-                f"\n Data Preview ({preview_size} records):",
-                format_data_for_display(preview_data, table)
-            ])
-        else:
-            output_lines.append("\n Table is empty - no data to preview")
 
         final_output = "\n".join(output_lines)
 
@@ -62,9 +53,13 @@ async def kdbx_describe_table_impl(table: str) -> List[TextContent]:
 
 async def kdbx_describe_tables_impl() -> List[TextContent]:
     try:
-        conn = get_kdb_connection()
+        conn = kxi.query.Query()
 
-        available_tables = conn.tables(None).py()
+        # available_tables = conn.get_meta().py()['schema']['table']
+        meta = conn.get_meta().py()
+        idx = meta['assembly']['assembly'].index('smbcpoc')
+
+        available_tables = meta['assembly']['tbls'][idx]
         
         # Filter out internal AI library index tables (*document, *stats, *token)
         available_tables = [
