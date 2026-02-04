@@ -2,6 +2,9 @@ kdb Insights Python Query API Query Guide
 
 Parameters
 
+Only the following keyword arguments are supported:
+start_time, end_time, input_timezone, output_timezone, filter, group_by, aggregations, fill, temporality, slice, sort_columns, labels, limit
+
 |name|type|description|default|
 |---|---|---|---|
 |table|str|The name of the table from which to retrieve data|N/A|
