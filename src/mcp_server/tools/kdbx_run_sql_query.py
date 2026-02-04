@@ -1,8 +1,5 @@
 import logging
-import pykx as kx
-import json
 from typing import Dict, Any
-from mcp_server.utils.kdbx import get_kdb_connection
 import kxi.query
 
 logger = logging.getLogger(__name__)
