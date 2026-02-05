@@ -13,6 +13,8 @@ async def run_get_meta_impl() -> Dict[str, Any]:
         conn = kxi.query.Query(data_format='application/json')
         data = conn.get_meta()
 
+        ## todo - limit data result to smbcpoc asm to help with context size??
+
         result = {'rowCount': len(data), 'data': data}
         total = int(result['rowCount'])
         if 0==total:
