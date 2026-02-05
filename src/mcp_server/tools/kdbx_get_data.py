@@ -132,14 +132,13 @@ def _validate_and_normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     limit = params.get("limit")
     if limit is not None:
         if isinstance(limit, int):
-            if limit <= 0:
-                raise ValueError("limit must be a positive int")
-            params["limit"] = min(limit, MAX_ROWS_RETURNED)
-        elif isinstance(limit, list) and all(isinstance(x, int) and x > 0 for x in limit):
-            # leave list[int] semantics to the underlying API
-            pass
+            # if limit <= 0:
+                # raise ValueError("limit must be a positive int")
+            params["limit"] = max(-MAX_ROWS_RETURNED, min(limit, MAX_ROWS_RETURNED))
+        elif isinstance(limit, list) and all(isinstance(x, int) and x for x in limit):
+            params["limit"] = [ max(-MAX_ROWS_RETURNED, min(x, MAX_ROWS_RETURNED)) for x in limit ]
         else:
-            raise TypeError("limit must be int or list[int] (positive values)")
+            raise TypeError("limit must be int or list[int]")
     else:
         # Optional: default to MAX_ROWS_RETURNED to be safe
         params["limit"] = MAX_ROWS_RETURNED
