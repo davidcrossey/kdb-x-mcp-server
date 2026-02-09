@@ -132,8 +132,6 @@ def _validate_and_normalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     limit = params.get("limit")
     if limit is not None:
         if isinstance(limit, int):
-            # if limit <= 0:
-                # raise ValueError("limit must be a positive int")
             params["limit"] = max(-MAX_ROWS_RETURNED, min(limit, MAX_ROWS_RETURNED))
         elif isinstance(limit, list) and all(isinstance(x, int) and x for x in limit):
             params["limit"] = [ max(-MAX_ROWS_RETURNED, min(x, MAX_ROWS_RETURNED)) for x in limit ]
@@ -214,6 +212,9 @@ def register_tools(mcp_server):
         """
         Execute an API call and return structured results only to be used on kdb and not on kdbai.
 
+        Managing token limits:
+            Limit tables to smbcpoc assembly (9 tables); always use start_time/end_time (default to 'today'); always use limit (default -10 for the last 10 N records); encourage use of filters/group_by/aggregations to reduce result size. Only pull back specific columns—avoid SELECT * style queries.
+
         Input:
             query (str): JSON string containing parameters for get_data.
 
@@ -233,11 +234,21 @@ def register_tools(mcp_server):
               - labels (dict[str,str]) [optional]
               - limit (int|list[int]) [optional; int is clamped to MAX_ROWS_RETURNED]
 
+        Filter syntax: [["function", "column", parameter]]
+        Aggregation syntax: [["assign_name", "function", "column"]]
+
         Examples:
-            {"table":"dOrderReport"}
-            {"table":"my_table","group_by":["sensorID","qual"]}
-            {"table":"my_table","filter":[["within","qual",[0,2]]]}
-            {"table":"my_table","start_time":"2000.05.26","end_time":"2000.05.27"}
+            # Get last 5 rows from a table
+            {"table":"dOrderReport","start_time":"2026.02.08","end_time":"2026.02.09","limit":-5}
+            
+            # Group sensor data by ID and quality
+            {"table":"dOrderReport","start_time":"2026.02.08","end_time":"2026.02.09","limit":-5,"group_by":["sensorID","qual"]}
+            
+            # Filter for quality values between 0 and 2
+            {"table":"dOrderReport","start_time":"2026.02.08","end_time":"2026.02.09","filter":[["within","qual",[0,2]]]}
+            
+            # Time-range query with row count aggregation
+            {"table":"dOrderReport","start_time":"2026.02.08","end_time":"2026.02.09","aggregations":[["cnt","count","time"]]}
 
         For API syntax and examples, see: file://guidance/kdbx-get-data
 
