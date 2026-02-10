@@ -9,7 +9,7 @@ import kxi.query
 logger = logging.getLogger(__name__)
 
 
-async def kdbx_describe_table_impl(table: str) -> List[TextContent]:
+async def insights_describe_table_impl(table: str) -> List[TextContent]:
     """
     Describe a specific KDB table with metadata.
 
@@ -51,7 +51,7 @@ async def kdbx_describe_table_impl(table: str) -> List[TextContent]:
         return [TextContent(type="text", text=error_output)]
 
 
-async def kdbx_describe_tables_impl() -> List[TextContent]:
+async def insights_describe_tables_impl() -> List[TextContent]:
     try:
         conn = kxi.query.Query()
 
@@ -80,7 +80,7 @@ async def kdbx_describe_tables_impl() -> List[TextContent]:
         ]
 
         for table_name in available_tables:
-            table_analysis = await kdbx_describe_table_impl(table_name)
+            table_analysis = await insights_describe_table_impl(table_name)
             overview_parts.append(table_analysis[0].text)
 
         complete_overview = "\n".join(overview_parts)
@@ -97,14 +97,14 @@ async def kdbx_describe_tables_impl() -> List[TextContent]:
 
 
 def register_resources(mcp_server):
-    @mcp_server.resource("kdbx://tables")
-    async def kdbx_describe_tables() -> List[TextContent]:
+    @mcp_server.resource("insights://tables")
+    async def insights_describe_tables() -> List[TextContent]:
         """
         Generate comprehensive KDB database schema overview with all KDB table details.
 
         Returns:
             List[TextContent]: Complete database analysis with all tables
         """
-        return await kdbx_describe_tables_impl()
+        return await insights_describe_tables_impl()
 
-    return ['kdbx://tables']
+    return ['insights://tables']

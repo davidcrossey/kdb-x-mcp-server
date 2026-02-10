@@ -34,7 +34,7 @@ async def run_get_meta_impl() -> Dict[str, Any]:
 
 def register_tools(mcp_server):
     @mcp_server.tool()
-    async def kdbx_get_meta() -> Dict[str, Any]:
+    async def insights_get_meta() -> Dict[str, Any]:
         """
         Execute an API call and return structured results only to be used on kdb and not on kdbai.
 
@@ -46,4 +46,4 @@ def register_tools(mcp_server):
         """
         return await run_get_meta_impl()
 
-    return ["kdbx_get_meta"]
+    return ["insights_get_meta"]

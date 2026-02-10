@@ -208,7 +208,7 @@ async def run_get_data_impl(getDataQuery: str) -> Dict[str, Any]:
 
 def register_tools(mcp_server):
     @mcp_server.tool()
-    async def kdbx_get_data(query: str) -> Dict[str, Any]:
+    async def insights_get_data(query: str) -> Dict[str, Any]:
         """
         Execute an API call and return structured results only to be used on kdb and not on kdbai.
 
@@ -250,11 +250,11 @@ def register_tools(mcp_server):
             # Time-range query with row count aggregation
             {"table":"dOrderReport","start_time":"2026.02.08","end_time":"2026.02.09","aggregations":[["cnt","count","time"]]}
 
-        For API syntax and examples, see: file://guidance/kdbx-get-data
+        For API syntax and examples, see: file://guidance/insights-get-data
 
         Returns:
             Dict[str, Any]: Query execution results.
         """
         return await run_get_data_impl(getDataQuery=query)
 
-    return ["kdbx_get_data"]
+    return ["insights_get_data"]

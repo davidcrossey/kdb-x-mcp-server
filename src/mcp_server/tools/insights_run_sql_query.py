@@ -16,7 +16,7 @@ async def run_query_impl(sqlSelectQuery: str) -> Dict[str, Any]:
 
         conn = kxi.query.Query(data_format='application/json')
         data = conn.sql(f"{sqlSelectQuery} LIMIT {MAX_ROWS_RETURNED}")
-        # below query gets kdbx table data back as json for correct conversion of different datatypes
+        # below query gets insights table data back as json for correct conversion of different datatypes
         result = {'rowCount': len(data), 'data': data}
         total = int(result['rowCount'])
         if 0==total:
@@ -49,7 +49,7 @@ async def run_query_impl(sqlSelectQuery: str) -> Dict[str, Any]:
 
 def register_tools(mcp_server):
     @mcp_server.tool()
-    async def kdbx_run_sql_query(query: str) -> Dict[str, Any]:
+    async def insights_run_sql_query(query: str) -> Dict[str, Any]:
         """
         Execute a SQL query and return structured results only to be used on kdb and not on kdbai.
 
@@ -57,7 +57,7 @@ def register_tools(mcp_server):
         database. It parses the query, executes it against the data source, and returns
         the results in a structured format suitable for further analysis or display.
 
-        Use the kdbx_sql_query_guidance resource when creating queries
+        Use the insights_sql_query_guidance resource when creating queries
 
 
         Supported query types:
@@ -67,7 +67,7 @@ def register_tools(mcp_server):
             - LIMIT for result pagination
             - Basic aggregation functions (COUNT, SUM, AVG, etc.)
 
-        For query syntax and examples, see: file://guidance/kdbx-sql-queries
+        For query syntax and examples, see: file://guidance/insights-sql-queries
 
         Args:
             query (str): SQL SELECT query string to execute. Must be a valid SQL statement
@@ -78,4 +78,4 @@ def register_tools(mcp_server):
         """
         return await run_query_impl(sqlSelectQuery=query)
 
-    return ['kdbx_run_sql_query']
+    return ['insights_run_sql_query']
