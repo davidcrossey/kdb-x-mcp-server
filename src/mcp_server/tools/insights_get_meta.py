@@ -4,22 +4,23 @@ import kxi.query
 
 logger = logging.getLogger(__name__)
 
+VALID_KEYS = frozenset({'rc', 'dap', 'api', 'agg', 'assembly', 'schema'})
+
 # ----------------------------
 # Core implementation
 # ----------------------------
 async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) -> Dict[str, Any]:
 
+    # Validate inputs before making the network call
+    if key not in VALID_KEYS:
+        return {
+            "status": "error",
+            "message": f"Invalid key '{key}'. Must be one of: {', '.join(VALID_KEYS)}"
+        }
+
     try:
         conn = kxi.query.Query(data_format='application/json')
         data = conn.get_meta()
-
-        # Filter data by key
-        valid_keys = ['rc', 'dap', 'api', 'agg', 'assembly', 'schema']
-        if key not in valid_keys:
-            return {
-                "status": "error",
-                "message": f"Invalid key '{key}'. Must be one of: {', '.join(valid_keys)}"
-            }
 
         # Extract the specified key from data
         if isinstance(data, dict) and key in data:
@@ -39,9 +40,9 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
                 }
 
             # Extract list of available tables first (before filtering)
-            available_tables = [item.get('table') for item in data if item.get('table')]
+            available_tables = [t for item in data if (t := item.get('table'))]
 
-            if not tbl or tbl.strip() == '':
+            if not tbl or not tbl.strip():
                 return {
                     "status": "error",
                     "message": "Table name (tbl) must be provided when querying schema",
@@ -57,12 +58,11 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
                     "available_tables": available_tables
                 }
 
-        result = {'rowCount': len(data) if isinstance(data, list) else 1, 'data': data}
-        total = int(result['rowCount'])
-        if 0==total:
+        rows = data if isinstance(data, list) else [data]
+        if not rows:
             return {"status": "success", "data": [], "message": "No rows returned"}
-        rows = result['data']
-        logger.info(f"Query returned {total} rows for key: {key}{f', table: {tbl}' if tbl else ''}.")
+
+        logger.info(f"Query returned {len(rows)} rows for key: {key}{f', table: {tbl}' if tbl else ''}.")
 
         return {
             "status": "success",
@@ -70,7 +70,7 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
         }
 
     except Exception as e:
-        logger.error(f"Query failed: {e}")
+        logger.exception(f"Query failed for key={key}, tbl={tbl}")
         return {"status": "error", "message": str(e)}
 
 
