@@ -76,7 +76,7 @@ async def run_get_countby_impl(getCountByQuery: str) -> Dict[str, Any]:
 
         # Initialize connection and fetch custom APIs
         conn = kxi.query.Query(data_format='application/json')
-        conn.fetch_udas()
+        conn.fetch_custom_apis()
 
         # Call the getCountBy custom API
         result = conn.exampleuda_countBy(json=params)
