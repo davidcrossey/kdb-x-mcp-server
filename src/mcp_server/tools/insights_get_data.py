@@ -2,9 +2,12 @@ import logging
 import json
 from typing import Dict, Any, List, Union, Tuple
 import kxi.query
+from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
 
 logger = logging.getLogger(__name__)
 MAX_ROWS_RETURNED = 1000
+
+tracker = SizeTracker("insights_size_log.json")
 
 # ----------------------------
 # Allowed params + validation
@@ -208,6 +211,7 @@ async def run_get_data_impl(getDataQuery: str) -> Dict[str, Any]:
 
 def register_tools(mcp_server):
     @mcp_server.tool()
+    @track_size(tracker, "insights_get_data")
     async def insights_get_data(query: str) -> Dict[str, Any]:
         """
         Execute an API call and return structured results only to be used on kdb and not on kdbai.

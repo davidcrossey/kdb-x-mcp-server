@@ -2,8 +2,11 @@ import json
 import logging
 from typing import Dict, Any, List, Tuple
 import kxi.query
+from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
 
 logger = logging.getLogger(__name__)
+
+tracker = SizeTracker("insights_size_log.json")
 
 ALLOWED_KEYS = {
     "table",
@@ -117,6 +120,7 @@ def register_tools(mcp_server):
     This function is called automatically during server startup.
     """
     @mcp_server.tool()
+    @track_size(tracker, "insights_get_countby")
     async def insights_get_countby(query: str) -> Dict[str, Any]:
         """
         Execute a count aggregation grouped by specified columns over a time range.

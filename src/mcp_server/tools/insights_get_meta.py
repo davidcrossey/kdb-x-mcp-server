@@ -1,8 +1,11 @@
 import logging
 from typing import Dict, Any, Optional
 import kxi.query
+from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
 
 logger = logging.getLogger(__name__)
+
+tracker = SizeTracker("insights_size_log.json")
 
 VALID_KEYS = frozenset({'rc', 'dap', 'api', 'agg', 'assembly', 'schema'})
 
@@ -76,6 +79,7 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
 
 def register_tools(mcp_server):
     @mcp_server.tool()
+    @track_size(tracker, "insights_get_meta")
     async def insights_get_meta(key: str = "assembly", tbl: Optional[str] = None) -> Dict[str, Any]:
         """
         Execute an API call and return structured metadata only to be used on kdb and not on kdbai.
