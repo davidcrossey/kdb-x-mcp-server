@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any
 import kxi.query
 from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from toon_format import encode
 
 tracker = SizeTracker("insights_size_log.json")
 
@@ -18,9 +19,11 @@ async def run_query_impl(sqlSelectQuery: str) -> Dict[str, Any]:
                 raise ValueError(f"Query contains dangerous keyword: {keyword}")
 
         conn = kxi.query.Query(data_format='application/json')
-        data = conn.sql(f"{sqlSelectQuery} LIMIT {MAX_ROWS_RETURNED}")
+        if 'LIMIT' not in query_upper:
+            sqlSelectQuery = f"{sqlSelectQuery} LIMIT {MAX_ROWS_RETURNED}"
+        data = conn.sql(sqlSelectQuery)
         # below query gets insights table data back as json for correct conversion of different datatypes
-        result = {'rowCount': len(data), 'data': data}
+        result = {'rowCount': len(data), 'data': encode(data)}
         total = int(result['rowCount'])
         if 0==total:
             return {"status": "success", "data": [], "message": "No rows returned"}

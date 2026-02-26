@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, Optional
 import kxi.query
 from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from toon_format import encode
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
 
         return {
             "status": "success",
-            "data": rows
+            "data": encode(rows)
         }
 
     except Exception as e:

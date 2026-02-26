@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, List, Union, Tuple
 import kxi.query
 from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from toon_format import encode
 
 logger = logging.getLogger(__name__)
 MAX_ROWS_RETURNED = 1000
@@ -186,7 +187,7 @@ async def run_get_data_impl(getDataQuery: str) -> Dict[str, Any]:
         if 0==total:
             return {"status": "success", "data": [], "message": "No rows returned"}
 
-        rows = result['data']
+        rows = encode(result['data'])
         if total > MAX_ROWS_RETURNED:
             logger.info(f"Table has {total} rows. Query returned truncated data to {MAX_ROWS_RETURNED} rows.")
             return {

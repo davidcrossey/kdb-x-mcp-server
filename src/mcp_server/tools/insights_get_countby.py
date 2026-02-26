@@ -3,6 +3,7 @@ import logging
 from typing import Dict, Any, List, Tuple
 import kxi.query
 from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from toon_format import encode
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ async def run_get_countby_impl(getCountByQuery: str) -> Dict[str, Any]:
 
         response = {
             "status": "success",
-            "data": payload,
+            "data": encode(payload),
             "count": count
         }
 
