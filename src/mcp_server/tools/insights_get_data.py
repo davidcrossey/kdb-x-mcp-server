@@ -8,7 +8,7 @@ from toon_format import encode
 logger = logging.getLogger(__name__)
 MAX_ROWS_RETURNED = 1000
 
-tracker = SizeTracker("insights_size_log.json")
+tracker = SizeTracker("insights_mcp_size_log.json")
 
 # ----------------------------
 # Allowed params + validation

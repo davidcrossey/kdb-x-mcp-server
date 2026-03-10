@@ -7,7 +7,7 @@ from toon_format import encode
 
 logger = logging.getLogger(__name__)
 
-tracker = SizeTracker("insights_size_log.json")
+tracker = SizeTracker("insights_mcp_size_log.json")
 
 ALLOWED_KEYS = {
     "table",

@@ -11,7 +11,7 @@ from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
 
 config = KDBConfig()
 logger = logging.getLogger(__name__)
-tracker = SizeTracker("insights_size_log.json")
+tracker = SizeTracker("insights_mcp_size_log.json")
 
 
 async def kdbx_similarity_search_impl(table_name: str,
