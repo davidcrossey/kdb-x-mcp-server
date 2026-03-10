@@ -2,13 +2,11 @@ import logging
 import json
 from typing import Dict, Any, List, Union, Tuple
 import kxi.query
-from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
 logger = logging.getLogger(__name__)
 MAX_ROWS_RETURNED = 1000
-
-tracker = SizeTracker("insights_mcp_size_log.json")
 
 # ----------------------------
 # Allowed params + validation

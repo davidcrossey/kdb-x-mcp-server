@@ -7,11 +7,10 @@ from mcp_server.utils.kdbx import get_kdb_connection
 from mcp_server.utils.embeddings import get_provider
 from mcp_server.utils.format_utils import normalize_search_result
 from mcp_server.utils.embeddings_helpers import get_embedding_config
-from mcp_server.stats.mcp_size_tracker import SizeTracker, track_size
+from mcp_server.stats import tracker, track_size
 
 config = KDBConfig()
 logger = logging.getLogger(__name__)
-tracker = SizeTracker("insights_mcp_size_log.json")
 
 
 async def kdbx_similarity_search_impl(table_name: str,
