@@ -45,7 +45,7 @@ async def kdbx_similarity_search_impl(table_name: str,
                                     vecs:?[tbl;enlist (=;.Q.pf;d);0b;(enlist c)!enlist c]c;
                                     if[not count vecs; :()];
                                     res:.ai.flat.search[vecs;args`qvec;args`n;args`metric];
-                                    res:res@\:iasc res[1];
+                                    res:res@\\:iasc res[1];
                                     `dist xcols update dist:res[0] from ?[tbl;((=;.Q.pf;d);(in;`i;res[1]));0b;()]
                                 }[;args;get args`table;c] each .Q.pv;
                                 ![(args`n)#`dist xdesc res;();0b;enlist c]
@@ -118,7 +118,7 @@ async def kdbx_hybrid_search_impl(table_name: str,
                                     vecs:?[tbl;enlist (=;.Q.pf;d);0b;(enlist c)!enlist c]c;
                                     if[not count vecs; :()];
                                     res:.ai.flat.search[vecs;args`dense;args`n;args`metric];
-                                    res:res@\:iasc res[1];
+                                    res:res@\\:iasc res[1];
                                     `dist`id xcols update dist:res[0],id:((0,neg[1]_sums[.Q.cn[tbl]])@.Q.pv?/:d)+res[1] from ?[tbl;((=;.Q.pf;d);(in;`i;res[1]));0b;()]
                                 }[;args;get args`table;c] each .Q.pv;
                                 rdense:![(args`n)#`dist xdesc rdense;();0b;enlist c];
