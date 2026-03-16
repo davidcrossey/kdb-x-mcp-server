@@ -2,6 +2,7 @@ import logging
 import pykx as kx
 import json
 from typing import Dict, Any
+from mcp_server.utils.kdbx import get_kdb_connection
 from mcp_server.stats import tracker, track_size
 
 logger = logging.getLogger(__name__)
