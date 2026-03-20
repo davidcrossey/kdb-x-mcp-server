@@ -1,6 +1,5 @@
 import logging
 from typing import Dict, Any
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -16,6 +15,7 @@ async def run_query_impl(sqlSelectQuery: str) -> Dict[str, Any]:
             if keyword in query_upper and not query_upper.startswith('SELECT'):
                 raise ValueError(f"Query contains dangerous keyword: {keyword}")
 
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         if 'LIMIT' not in query_upper:
             sqlSelectQuery = f"{sqlSelectQuery} LIMIT {MAX_ROWS_RETURNED}"

@@ -1,7 +1,6 @@
 import logging
 import json
 from typing import Dict, Any, List, Union, Tuple
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -177,6 +176,7 @@ async def run_get_data_impl(getDataQuery: str) -> Dict[str, Any]:
 
         # NOTE: conn.get_data appears to be synchronous in most usages.
         # If it is actually async in your environment, change this line to: rows = await conn.get_data(...)
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         data = conn.get_data(table, **params)
 

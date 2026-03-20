@@ -1,6 +1,5 @@
 import logging
 from typing import Dict, Any, Optional
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -21,6 +20,7 @@ async def run_get_meta_impl(key: str = "assembly", tbl: Optional[str] = None) ->
         }
 
     try:
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         data = conn.get_meta()
 

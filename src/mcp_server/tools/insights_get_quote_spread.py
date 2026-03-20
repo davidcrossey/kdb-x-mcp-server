@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Dict, Any, List, Tuple
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -84,6 +83,7 @@ async def run_get_quote_spread_impl(getQuoteSpreadQuery: str) -> Dict[str, Any]:
         params = _validate_and_normalize_params(cleaned)
 
         # Initialize connection and fetch custom APIs
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         conn.fetch_custom_apis()
 
@@ -135,23 +135,28 @@ def register_tools(mcp_server):
         spread (VWAS), and average bid/ask sizes. Use this instead of fetching raw quote data
         to drastically reduce data volume.
 
+        GUARDRAILS — always apply these defaults unless the user explicitly overrides:
+          - Default time window: 1 hour. Do not query more than 1 hour at a time without explicit user instruction.
+          - Quote data is extremely high-frequency; keeping windows short is critical to avoid overwhelming response payloads.
+          - If a user asks for "today" or a multi-hour/multi-day range, paginate in 1-hour chunks rather than issuing a single large query.
+
         Input:
             query (str): JSON string containing parameters for the quoteSpread operation.
 
             Required keys:
               - table (str): Name of the table to query (typically "dfxQuote")
               - startTS (str): Start timestamp in ISO format (e.g., "2026-03-05T05:00:01.000000000")
-              - endTS (str): End timestamp in ISO format (e.g., "2026-03-05T06:00:01.000000000")
+              - endTS (str): End timestamp in ISO format (e.g., "2026-03-05T06:00:01.000000000") — limit to 1 hour ahead of startTS by default
 
             Optional keys:
               - syms (str|list[str]): Symbol(s) to filter on (e.g. "USD/JPY" or ["USD/JPY","EUR/USD"]). Omit to return all symbols.
               - groupByCols (str|list[str]): Additional column(s) to group by beyond sym (e.g. "src", ["src","tenor"]). Omit to group by sym only.
 
         Examples:
-            # Spread stats for all syms, grouped by sym only
+            # Spread stats for all syms over 1 hour (default pattern), grouped by sym only
             {"table":"dfxQuote","startTS":"2026-03-05T05:00:01.000000000","endTS":"2026-03-05T06:00:01.000000000"}
 
-            # Spread stats for USD/JPY, broken down by src and tenor
+            # Spread stats for USD/JPY, broken down by src and tenor over 1 hour
             {"table":"dfxQuote","syms":"USD/JPY","groupByCols":["src","tenor"],"startTS":"2026-03-05T05:00:01.000000000","endTS":"2026-03-05T06:00:01.000000000"}
 
         Returns:

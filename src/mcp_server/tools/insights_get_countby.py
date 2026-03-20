@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Dict, Any, List, Tuple
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -77,6 +76,7 @@ async def run_get_countby_impl(getCountByQuery: str) -> Dict[str, Any]:
         params = _validate_and_normalize_params(cleaned)
 
         # Initialize connection and fetch custom APIs
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         conn.fetch_custom_apis()
 

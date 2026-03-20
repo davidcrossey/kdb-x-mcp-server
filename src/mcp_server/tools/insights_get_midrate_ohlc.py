@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Dict, Any, List, Tuple
-import kxi.query
 from mcp_server.stats import tracker, track_size
 from toon_format import encode
 
@@ -78,6 +77,7 @@ async def run_get_midrate_ohlc_impl(getMidrateOhlcQuery: str) -> Dict[str, Any]:
         params = _validate_and_normalize_params(cleaned)
 
         # Initialize connection and fetch custom APIs
+        import kxi.query
         conn = kxi.query.Query(data_format='application/json')
         conn.fetch_custom_apis()
 
@@ -128,23 +128,28 @@ def register_tools(mcp_server):
         close mid rate, average/min/max spread, average bid/ask sizes, and tick count.
         Use this instead of fetching raw tick data to drastically reduce data volume.
 
+        GUARDRAILS — always apply these defaults unless the user explicitly overrides:
+          - Default time window: 1 hour. Do not query more than 1 hour at a time without explicit user instruction.
+          - Default bucket size: 10 minutes ("0D00:10:00.000000000"). Use finer buckets (e.g. 1 min) only if the user specifically asks for higher resolution.
+          - If a user asks for "today" or a multi-hour/multi-day range, paginate in 1-hour chunks rather than issuing a single large query.
+
         Input:
             query (str): JSON string containing parameters for the midrateOhlc operation.
 
             Required keys:
               - table (str): Name of the table to query (typically "dfxMidRateTOB")
-              - bucket (str): Time bucket size as a timespan string (e.g. "0D00:01:00.000000000" for 1 minute, "0D00:05:00.000000000" for 5 minutes)
+              - bucket (str): Time bucket size as a timespan string (e.g. "0D00:10:00.000000000" for 10 minutes [default], "0D00:01:00.000000000" for 1 minute)
               - startTS (str): Start timestamp in ISO format (e.g., "2026-03-05T05:00:01.000000000")
-              - endTS (str): End timestamp in ISO format (e.g., "2026-03-05T06:00:01.000000000")
+              - endTS (str): End timestamp in ISO format (e.g., "2026-03-05T06:00:01.000000000") — limit to 1 hour ahead of startTS by default
 
             Optional keys:
               - syms (str|list[str]): Symbol(s) to filter on (e.g. "USD/JPY" or ["USD/JPY","EUR/USD"]). Omit to return all symbols.
 
         Examples:
-            # 1-minute OHLC for all syms
-            {"table":"dfxMidRateTOB","bucket":"0D00:01:00.000000000","startTS":"2026-03-05T05:00:01.000000000","endTS":"2026-03-05T06:00:01.000000000"}
+            # 10-minute OHLC for all syms over 1 hour (default pattern)
+            {"table":"dfxMidRateTOB","bucket":"0D00:10:00.000000000","startTS":"2026-03-05T05:00:01.000000000","endTS":"2026-03-05T06:00:01.000000000"}
 
-            # 5-minute OHLC for USD/JPY only
+            # 5-minute OHLC for USD/JPY only over 1 hour
             {"table":"dfxMidRateTOB","syms":"USD/JPY","bucket":"0D00:05:00.000000000","startTS":"2026-03-05T05:00:01.000000000","endTS":"2026-03-05T06:00:01.000000000"}
 
         Returns:
